@@ -1,0 +1,85 @@
+{
+  "version": 2,
+  "dgSpecHash": "4S6LznBREBs=",
+  "success": true,
+  "projectFilePath": "/Users/sujay/Documents/projects/git-repos/eShop/ProductService/ProductService.csproj",
+  "expectedPackageFiles": [
+    "/Users/sujay/.nuget/packages/confluent.kafka/2.1.0/confluent.kafka.2.1.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/librdkafka.redist/2.1.0/librdkafka.redist.2.1.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/microsoft.aspnetcore.openapi/9.0.7/microsoft.aspnetcore.openapi.9.0.7.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/microsoft.extensions.configuration/3.1.0/microsoft.extensions.configuration.3.1.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/microsoft.extensions.configuration.abstractions/3.1.0/microsoft.extensions.configuration.abstractions.3.1.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/microsoft.extensions.configuration.binder/3.1.0/microsoft.extensions.configuration.binder.3.1.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/microsoft.extensions.dependencyinjection/3.1.0/microsoft.extensions.dependencyinjection.3.1.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/8.0.0/microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/microsoft.extensions.fileproviders.abstractions/2.1.0/microsoft.extensions.fileproviders.abstractions.2.1.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/microsoft.extensions.hosting.abstractions/2.1.0/microsoft.extensions.hosting.abstractions.2.1.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/microsoft.extensions.logging/3.1.0/microsoft.extensions.logging.3.1.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/microsoft.extensions.logging.abstractions/3.1.0/microsoft.extensions.logging.abstractions.3.1.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/microsoft.extensions.logging.configuration/3.1.0/microsoft.extensions.logging.configuration.3.1.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/microsoft.extensions.options/8.0.0/microsoft.extensions.options.8.0.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/microsoft.extensions.options.configurationextensions/3.1.0/microsoft.extensions.options.configurationextensions.3.1.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/microsoft.extensions.primitives/8.0.0/microsoft.extensions.primitives.8.0.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/microsoft.openapi/1.6.17/microsoft.openapi.1.6.17.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/opentelemetry/1.4.0/opentelemetry.1.4.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/opentelemetry.api/1.6.0/opentelemetry.api.1.6.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/opentelemetry.api.providerbuilderextensions/1.6.0/opentelemetry.api.providerbuilderextensions.1.6.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/opentelemetry.exporter.jaeger/1.4.0/opentelemetry.exporter.jaeger.1.4.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/opentelemetry.extensions.hosting/1.4.0/opentelemetry.extensions.hosting.1.4.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/opentelemetry.instrumentation.aspnetcore/1.6.0/opentelemetry.instrumentation.aspnetcore.1.6.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/opentelemetry.instrumentation.http/1.6.0/opentelemetry.instrumentation.http.1.6.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/system.diagnostics.diagnosticsource/7.0.2/system.diagnostics.diagnosticsource.7.0.2.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/system.memory/4.5.0/system.memory.4.5.0.nupkg.sha512",
+    "/Users/sujay/.nuget/packages/system.threading.tasks.extensions/4.5.4/system.threading.tasks.extensions.4.5.4.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1603",
+      "level": "Warning",
+      "message": "ProductService depends on OpenTelemetry.Instrumentation.AspNetCore (>= 1.4.0) but OpenTelemetry.Instrumentation.AspNetCore 1.4.0 was not found. OpenTelemetry.Instrumentation.AspNetCore 1.6.0 was resolved instead.",
+      "projectPath": "/Users/sujay/Documents/projects/git-repos/eShop/ProductService/ProductService.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/sujay/Documents/projects/git-repos/eShop/ProductService/ProductService.csproj",
+      "libraryId": "OpenTelemetry.Instrumentation.AspNetCore",
+      "targetGraphs": [
+        "net9.0"
+      ]
+    },
+    {
+      "code": "NU1603",
+      "level": "Warning",
+      "message": "ProductService depends on OpenTelemetry.Instrumentation.Http (>= 1.4.0) but OpenTelemetry.Instrumentation.Http 1.4.0 was not found. OpenTelemetry.Instrumentation.Http 1.6.0 was resolved instead.",
+      "projectPath": "/Users/sujay/Documents/projects/git-repos/eShop/ProductService/ProductService.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/sujay/Documents/projects/git-repos/eShop/ProductService/ProductService.csproj",
+      "libraryId": "OpenTelemetry.Instrumentation.Http",
+      "targetGraphs": [
+        "net9.0"
+      ]
+    },
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "message": "Package 'OpenTelemetry.Instrumentation.AspNetCore' 1.6.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-vh2m-22xx-q94f",
+      "projectPath": "/Users/sujay/Documents/projects/git-repos/eShop/ProductService/ProductService.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/sujay/Documents/projects/git-repos/eShop/ProductService/ProductService.csproj",
+      "libraryId": "OpenTelemetry.Instrumentation.AspNetCore",
+      "targetGraphs": [
+        "net9.0"
+      ]
+    },
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "message": "Package 'OpenTelemetry.Instrumentation.Http' 1.6.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-vh2m-22xx-q94f",
+      "projectPath": "/Users/sujay/Documents/projects/git-repos/eShop/ProductService/ProductService.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/sujay/Documents/projects/git-repos/eShop/ProductService/ProductService.csproj",
+      "libraryId": "OpenTelemetry.Instrumentation.Http",
+      "targetGraphs": [
+        "net9.0"
+      ]
+    }
+  ]
+}

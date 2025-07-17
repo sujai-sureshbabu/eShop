@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  kafka:
+    image: bitnami/kafka:latest
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/bitnami/kafka
+    environment:
+      KAFKA_CFG_NODE_ID: 0
+      KAFKA_CFG_PROCESS_ROLES: broker,controller
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@localhost:9093
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_KRAFT_CLUSTER_ID: kraft-cluster
+      ALLOW_PLAINTEXT_LISTENER: yes
+
+  kafka-init:
+    image: bitnami/kafka:latest
+    depends_on:
+      - kafka
+    entrypoint: >
+      bash -c "
+        sleep 10 &&
+        kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic product-events --partitions 1 --replication-factor 1
+      "
+
+  product-api:
+    build:
+      context: ./ProductApi
+    ports:
+      - "5001:8080"
+    depends_on:
+      - kafka
+
+  # order-db:
+  #   image: mcr.microsoft.com/mssql/server:2022-latest
+  #   environment:
+  #     SA_PASSWORD: "Your_password123"
+  #     ACCEPT_EULA: "Y"
+  #   ports:
+  #     - "1433:1433"
+  #   networks:
+  #     - default
+
+  order-service:
+    build:
+      context: ./OrderService
+    depends_on:
+      - kafka
+      - order-db
+      - postgres
+    environment:
+      ConnectionStrings__OrderDb: "Server=order-db,1433;Database=OrderDb;User=sa;Password=Your_password123;"
+    entrypoint: >
+      bash -c "
+        echo 'Waiting for SQL Server...' &&
+        until /opt/mssql-tools/bin/sqlcmd -S order-db -U sa -P Your_password123 -Q 'SELECT 1' > /dev/null 2>&1; do
+          sleep 2
+        done &&
+        echo 'Running EF Migrations...' &&
+        dotnet ef database update &&
+        echo 'Starting OrderService...' &&
+        dotnet OrderService.dll
+      "
+  postgres:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: orderuser
+      POSTGRES_PASSWORD: orderpass
+      POSTGRES_DB: orderdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data  
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "6831:6831/udp"
+
+volumes:
+  kafka_data:
+  pgdata:
