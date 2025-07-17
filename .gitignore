@@ -1,0 +1,13 @@
+
+ProductApi/bin/
+ProductApi/obj/
+OrderApi/bin/
+OrderApi/obj/
+OrderService/bin/
+OrderService/obj/
+Folder.DotSettings.user
+.idea/
+ProductApi/obj/project.assets.json
+ProductApi/obj/project.nuget.cache
+ProductApi/obj/Debug/net9.0/apphost
+ProductApi/obj/Debug/net9.0/staticwebassets.build.json
