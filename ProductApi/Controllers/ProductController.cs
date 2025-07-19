@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Confluent.Kafka;
-using ProductService;
+using ProductApi;
 using Microsoft.Extensions.Options;
 
 namespace ProductService.Controllers;

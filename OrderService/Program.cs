@@ -8,10 +8,7 @@ using OpenTelemetry.Trace;
 using OpenTelemetry.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 
-
-
-
-Host.CreateDefaultBuilder(args)
+var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
         services.Configure<KafkaSettings>(hostContext.Configuration.GetSection("Kafka"));
@@ -20,18 +17,43 @@ Host.CreateDefaultBuilder(args)
         {
             options.UseNpgsql(hostContext.Configuration.GetConnectionString("OrderDb"));
         });
-        // services.AddOpenTelemetryTracing(builder =>
-        // {
-        //     builder
-        //         .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("OrderService"))
-        //         .AddAspNetCoreInstrumentation()
-        //         .AddJaegerExporter(o =>
-        //         {
-        //             o.AgentHost = hostContext.Configuration["Jaeger:Host"];
-        //             o.AgentPort = int.Parse(hostContext.Configuration["Jaeger:Port"]);
-        //         });
-        // });
-
+        services.AddOpenTelemetry()
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("OrderService"))
+                    .AddAspNetCoreInstrumentation()
+                    .AddJaegerExporter(o =>
+                    {
+                        o.AgentHost = hostContext.Configuration["Jaeger:Host"];
+                        o.AgentPort = int.Parse(hostContext.Configuration["Jaeger:Port"]);
+                    });
+            });
     })
-    .Build()
-    .Run();
+    .Build();
+
+// Run migrations here before starting the host
+using var scope = host.Services.CreateScope();
+var db = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
+
+var retries = 10;
+var delay = TimeSpan.FromSeconds(5);
+
+while (retries > 0)
+{
+    try
+    {
+        db.Database.Migrate();
+        break; // Success, exit loop
+    }
+    catch (Exception ex)
+    {
+        retries--;
+        Console.WriteLine($"Failed to connect to DB. Retries left: {retries}. Exception: {ex.Message}");
+        if (retries == 0) throw; // Give up
+        Thread.Sleep(delay);
+    }
+}
+
+host.Run();
+

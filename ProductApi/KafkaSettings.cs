@@ -1,4 +1,4 @@
-namespace ProductService;
+namespace ProductApi;
 
 public class KafkaSettings
 {

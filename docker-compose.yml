@@ -36,37 +36,37 @@ services:
       - "5001:8080"
     depends_on:
       - kafka
+      - otel-collector
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      Kafka__BootstrapServers: kafka:9092
+      Kafka__Topic: product-events
 
-  # order-db:
-  #   image: mcr.microsoft.com/mssql/server:2022-latest
-  #   environment:
-  #     SA_PASSWORD: "Your_password123"
-  #     ACCEPT_EULA: "Y"
-  #   ports:
-  #     - "1433:1433"
-  #   networks:
-  #     - default
+  # Order API (exposes REST endpoints)
+  order-api:
+    build:
+      context: ./OrderApi
+    ports:
+      - "5005:8080"
+    depends_on:
+      - postgres
+      - kafka
+      - otel-collector
+    environment:
+      ConnectionStrings__OrderDb: Host=postgres;Port=5432;Database=orderdb;Username=orderuser;Password=orderpass
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
 
   order-service:
     build:
       context: ./OrderService
     depends_on:
       - kafka
-      - order-db
       - postgres
+      - otel-collector
     environment:
-      ConnectionStrings__OrderDb: "Server=order-db,1433;Database=OrderDb;User=sa;Password=Your_password123;"
-    entrypoint: >
-      bash -c "
-        echo 'Waiting for SQL Server...' &&
-        until /opt/mssql-tools/bin/sqlcmd -S order-db -U sa -P Your_password123 -Q 'SELECT 1' > /dev/null 2>&1; do
-          sleep 2
-        done &&
-        echo 'Running EF Migrations...' &&
-        dotnet ef database update &&
-        echo 'Starting OrderService...' &&
-        dotnet OrderService.dll
-      "
+      ConnectionStrings__OrderDb: Host=postgres;Port=5432;Database=orderdb;Username=orderuser;Password=orderpass
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      
   postgres:
     image: postgres:16
     restart: always
@@ -77,13 +77,54 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data  
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orderuser -d orderdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+# Jaeger (for distributed tracing)      
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:
       - "16686:16686"
       - "6831:6831/udp"
 
+# Prometheus (for metrics scraping)
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  # Grafana (for dashboards)
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning
+
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector-config.yml"]
+    volumes:
+      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+    ports:
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+      - "8889:8889"  # Prometheus scrape endpoint
+    depends_on:
+      - jaeger
+      - prometheus
+
 volumes:
-  kafka_data:
   pgdata:
+  kafka_data:
+  grafana_data:

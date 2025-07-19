@@ -1,20 +1,42 @@
+using OpenTelemetry.Trace;
+using ProductApi;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+
+
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+var resourceBuilder = ResourceBuilder.CreateDefault()
+    .AddService("ProductApi");
 builder.Services.AddOpenApi();
-// builder.Services.AddOpenTelemetry()
-//     .WithTracing(tracing =>
-//     {
-//         tracing
-//             //.AddAspNetCoreInstrumentation()
-//             // .AddJaegerExporter(o =>
-//             // {
-//             //     o.AgentHost = "jaeger";
-//             //     o.AgentPort = 6831;
-//             // });
-//     });
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing =>
+    {
+        tracing
+            .SetResourceBuilder(resourceBuilder)
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddOtlpExporter(otlp =>
+            {
+                otlp.Endpoint = new Uri("http://otel-collector:4317");
+            });
+    })
+    .WithMetrics(metrics =>
+    {
+        metrics
+            .SetResourceBuilder(resourceBuilder)
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddOtlpExporter(otlp =>
+            {
+                otlp.Endpoint = new Uri("http://otel-collector:4317");
+            });
+    });
 
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.Configure<KafkaSettings>(builder.Configuration.GetSection("Kafka"));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -23,7 +45,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseHttpsRedirection();
+app.MapControllers();
 
 var summaries = new[]
 {
