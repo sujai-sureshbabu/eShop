@@ -7,6 +7,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Exporter;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
@@ -23,11 +24,8 @@ var host = Host.CreateDefaultBuilder(args)
                 tracing
                     .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("OrderService"))
                     .AddAspNetCoreInstrumentation()
-                    .AddJaegerExporter(o =>
-                    {
-                        o.AgentHost = hostContext.Configuration["Jaeger:Host"];
-                        o.AgentPort = int.Parse(hostContext.Configuration["Jaeger:Port"]);
-                    });
+                    .AddOtlpExporter();
+
             });
     })
     .Build();

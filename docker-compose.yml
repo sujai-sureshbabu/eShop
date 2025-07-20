@@ -5,6 +5,8 @@ networks:
 
 services:
   kafka:
+    networks:
+      - kong-net
     image: bitnami/kafka:latest
     ports:
       - "9092:9092"
@@ -20,6 +22,7 @@ services:
       KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "false"
       KAFKA_KRAFT_CLUSTER_ID: kraft-cluster
+      KAFKA__BOOTSTRAP_SERVERS=kafka: 9092
       ALLOW_PLAINTEXT_LISTENER: yes
     healthcheck:
       test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"]
@@ -28,6 +31,8 @@ services:
       retries: 5
 
   kafka-init:
+    networks:
+      - kong-net
     image: bitnami/kafka:latest
     depends_on:
       - kafka
@@ -151,6 +156,21 @@ services:
       Kafka__BootstrapServers: kafka:9092
       Kafka__Topic: product-events
 
+  kong-init:
+    image: byrnedo/alpine-curl
+    depends_on:
+      - kong
+    networks:
+      - kong-net
+    volumes:
+      - ./infrastructure/api-gateway/kong-init.sh:/kong-init.sh:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      apk add --no-cache jq &&
+      chmod +x /kong-init.sh &&
+      /kong-init.sh
+
+
   # Order API (exposes REST endpoints)
   order-api:
     networks:
@@ -201,6 +221,8 @@ services:
 
 # Jaeger (for distributed tracing)      
   jaeger:
+    networks:
+      - kong-net
     image: jaegertracing/all-in-one:latest
     ports:
       - "16686:16686"
@@ -208,6 +230,8 @@ services:
 
 # Prometheus (for metrics scraping)
   prometheus:
+    networks:
+      - kong-net
     image: prom/prometheus:latest
     ports:
       - "9090:9090"
@@ -216,6 +240,8 @@ services:
 
   # Grafana (for dashboards)
   grafana:
+    networks:
+      - kong-net
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
@@ -227,6 +253,8 @@ services:
 
   # OpenTelemetry Collector
   otel-collector:
+    networks:
+      - kong-net
     image: otel/opentelemetry-collector-contrib:latest
     command: ["--config=/etc/otel-collector-config.yml"]
     volumes:
