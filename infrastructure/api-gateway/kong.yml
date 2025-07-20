@@ -1,0 +1,22 @@
+
+# Declarative configuration for Kong API Gateway
+# Use this if you have kong enterprise or want to use declarative configuration
+# Uncomment the kong-import service in docker-compose.yml to use this file
+# Note: This file is not used in the current setup, as Kong is configured via configure-kong.sh script
+# _format_version: "3.0"
+# services:
+#   - name: product-api
+#     url: http://product-api:8080
+#     routes:
+#       - name: product-route
+#         paths:
+#           - /api/product
+#         methods: [GET, POST, PUT, PATCH, DELETE]
+
+#   - name: order-api
+#     url: http://order-api:8080
+#     routes:
+#       - name: order-route
+#         paths:
+#           - /api/order
+#         methods: [GET, POST, PUT, PATCH, DELETE]

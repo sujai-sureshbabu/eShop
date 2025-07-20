@@ -1,4 +1,7 @@
 version: '3.8'
+networks:
+  kong-net:
+    driver: bridge
 
 services:
   kafka:
@@ -18,6 +21,11 @@ services:
       KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "false"
       KAFKA_KRAFT_CLUSTER_ID: kraft-cluster
       ALLOW_PLAINTEXT_LISTENER: yes
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   kafka-init:
     image: bitnami/kafka:latest
@@ -29,7 +37,108 @@ services:
         kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic product-events --partitions 1 --replication-factor 1
       "
 
+  kong-database:
+    image: postgres:13
+    platform: linux/arm64/v8
+    networks:
+      - kong-net
+    environment:
+      POSTGRES_USER: kong
+      POSTGRES_DB: kong
+      POSTGRES_PASSWORD: kong
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kong -d kong"]
+      interval: 5s
+      retries: 5
+    volumes:
+      - kong-db-data:/var/lib/postgresql/data
+
+  kong-bootstrap:
+    image: kong:3.9.1
+    networks:
+      - kong-net
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+      KONG_PG_DATABASE: kong
+    command: kong migrations bootstrap
+    restart: "on-failure"
+    depends_on:
+      kong-database:
+        condition: service_healthy
+  kong-migrations:
+    image: kong:3.9.1
+    depends_on:
+      - kong-bootstrap
+    networks:
+      - kong-net
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_PASSWORD: kong
+      KONG_PG_USER: kong
+      KONG_PG_DATABASE: kong
+    command: >
+      sh -c "kong migrations up  && kong migrations finish"
+    restart: "on-failure"
+
+  # This is only applicable with Kong enterprise mode
+  # Uncomment if you want to use Kong Enterprise with declarative configuration
+  # kong-import:
+  #   image: kong:3.9.1
+  #   depends_on:
+  #     - kong-database
+  #   networks:
+  #     - kong-net
+  #   volumes:
+  #     - ./infrastructure/api-gateway/kong.yml:/kong.yml:ro
+  #   environment:
+  #     KONG_DATABASE: postgres
+  #     KONG_PG_HOST: kong-database
+  #     KONG_PG_USER: kong
+  #     KONG_PG_PASSWORD: kong
+  #     KONG_PG_DATABASE: kong
+  #   command: kong config db_import /kong.yml
+
+  kong:
+    image: kong:3.9.1
+    platform: linux/arm64/v8
+    networks:
+      - kong-net
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
+    volumes:
+      - ./infrastructure/api-gateway/kong.yml:/kong/declarative/kong.yml:ro
+    depends_on:
+      - kong-database
+      - kong-migrations
+    command: ["kong", "start"]
+    ports:
+      - "8000:8000"   # Kong proxy (HTTP)
+      - "8443:8443"   # Kong proxy (HTTPS)
+      - "8001:8001"   # Kong Admin API (HTTP)
+      - "8444:8444"   # Kong Admin API (HTTPS)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   product-api:
+    networks:
+      - kong-net
     build:
       context: ./ProductApi
     ports:
@@ -44,6 +153,8 @@ services:
 
   # Order API (exposes REST endpoints)
   order-api:
+    networks:
+      - kong-net
     build:
       context: ./OrderApi
     ports:
@@ -57,6 +168,8 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
 
   order-service:
+    networks:
+      - kong-net
     build:
       context: ./OrderService
     depends_on:
@@ -68,6 +181,8 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       
   postgres:
+    networks:
+      - kong-net
     image: postgres:16
     restart: always
     environment:
@@ -128,3 +243,4 @@ volumes:
   pgdata:
   kafka_data:
   grafana_data:
+  kong-db-data:
