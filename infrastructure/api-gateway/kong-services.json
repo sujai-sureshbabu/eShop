@@ -1,0 +1,24 @@
+{
+  "services": [
+    {
+      "name": "product-api",
+      "url": "http://product-api:8080",
+      "routes": [
+        {
+          "name": "product-route",
+          "paths": ["/api/product"]
+        }
+      ]
+    },
+    {
+      "name": "order-api",
+      "url": "http://order-api:8080",
+      "routes": [
+        {
+          "name": "order-route",
+          "paths": ["/api/order"]
+        }
+      ]
+    }
+  ]
+}
