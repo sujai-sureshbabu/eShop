@@ -1,0 +1,15 @@
+[
+  {
+    "name": "product-events",
+    "partitions": 3,
+    "replication_factor": 1,
+    "configs": {
+      "cleanup.policy": "compact"
+    }
+  },
+  {
+    "name": "order-events",
+    "partitions": 2,
+    "replication_factor": 1
+  }
+]

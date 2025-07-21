@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace ProductService.Controllers;
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/product")]
 public class ProductController : ControllerBase
 {
     private readonly ILogger<ProductController> _logger;

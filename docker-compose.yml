@@ -30,17 +30,15 @@ services:
       timeout: 5s
       retries: 5
 
-  kafka-init:
-    networks:
-      - kong-net
-    image: bitnami/kafka:latest
+  kafka-topic-creator:
+    build:
+      context: ./infrastructure/kafka
     depends_on:
       - kafka
-    entrypoint: >
-      bash -c "
-        sleep 10 &&
-        kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic product-events --partitions 1 --replication-factor 1
-      "
+    networks:
+      - kong-net
+    environment:
+      - BOOTSTRAP_SERVERS=kafka:9092
 
   kong-database:
     image: postgres:13
