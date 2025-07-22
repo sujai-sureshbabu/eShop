@@ -6,7 +6,19 @@
       "routes": [
         {
           "name": "product-route",
-          "paths": ["/api/product"]
+          "paths": ["/api/product"],
+          "plugins": [
+            {
+              "name": "jwt"
+            },
+            {
+              "name": "rate-limiting",
+              "config": {
+                "minute": 60,
+                "policy": "local"
+              }
+            }
+          ]
         }
       ]
     },

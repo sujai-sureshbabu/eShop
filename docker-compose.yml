@@ -155,16 +155,13 @@ services:
       Kafka__Topic: product-events
 
   kong-init:
-    image: alpine:3.21
+    build:
+      context: ./infrastructure/api-gateway
     depends_on:
       - kong
     networks:
       - kong-net
-    volumes:
-    - ./infrastructure/api-gateway/kong-init.sh:/kong-init.sh:ro
-    - ./infrastructure/api-gateway/kong-services.json:/kong-services.json:ro
-    entrypoint: /bin/sh
-    command: -c "apk update && apk add --no-cache jq curl && sh /kong-init.sh"
+
 
 
   # Order API (exposes REST endpoints)
