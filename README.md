@@ -118,13 +118,36 @@ docker compose up -d
     curl http://localhost:8000/api/order
     ```
 
+### 🔐 JWT Authentication Setup
+
+This project configures Kong API Gateway with JWT-based authentication for securing service routes.
+
+#### ✅ What This Adds
+
+- JWT plugin is enabled on `product-api` and `order-api` routes
+- A consumer named `demo-client` is created automatically
+- JWT credentials (key/secret) are generated for this consumer
+- Tokens can be signed and used to access protected APIs
+
+#### 🛠 How It Works
+
+1. Kong's `jwt` plugin checks for a valid Bearer token
+2. The token must be signed using the consumer's secret
+3. Only valid tokens will be allowed through the protected route
+
 ---
 
 ## Observability
 
 - **Jaeger UI:** [http://localhost:16686](http://localhost:16686) — Distributed tracing visualization
+<img width="1913" height="949" alt="image" src="https://github.com/user-attachments/assets/8dd32da3-356b-4b23-8de3-426900594268" />
+
+
 - **Prometheus UI:** [http://localhost:9090](http://localhost:9090) — Metrics collection and querying
+<img width="1913" height="529" alt="image" src="https://github.com/user-attachments/assets/2d290907-4267-40d5-b2f1-943ebc8040d3" />
+
 - **Grafana UI:** [http://localhost:3000](http://localhost:3000) — Dashboards for metrics and traces
+<img width="1913" height="949" alt="image" src="https://github.com/user-attachments/assets/865db886-1aaa-4e48-a3d1-2212f11a4e3d" />
 
 ---
 
